@@ -1,0 +1,35 @@
+==========================================================================
+h = 0.50
+==========================================================================
+  FIRST DIVERGENCE at step 162 (t = 81.000)
+  state before step: x = 1.05108642, v = -0.08499154
+  correct step: xg = 1.14635612, vg = 0.46607034   (it=199, res=1.7e-01, conv=False)
+  buggy   step: xg = -1029739744199143854060863488.00000000, vg = -4118958976796575416243453952.00000000   (it=99, res=3.4e+81, conv=False)
+  deviation: 4.119e+27
+  ALL real roots of the stage equations at this state (u, xg, vg, residual):
+    u =    -4.058316   xg =    -3.007229   vg =     -16.148272   res = 1.1e+00
+    u =    -0.167013   xg =     0.884073   vg =      -0.583061   res = 1.1e+00
+    u =     0.020983   xg =     1.072070   vg =       0.168925   res = 1.1e+00
+
+==========================================================================
+h = 0.10
+==========================================================================
+  FIRST DIVERGENCE at step 811 (t = 81.100)
+  state before step: x = 0.96151534, v = -0.47617977
+  correct step: xg = -2.75296478, vg = -73.81342263   (it=199, res=4.3e-14, conv=False)
+  buggy   step: xg = 143970245207008822429577379840.00000000, vg = 2879404904140176448591547596800.00000000   (it=99, res=9.3e+87, conv=False)
+  deviation: 2.879e+30
+  ALL real roots of the stage equations at this state (u, xg, vg, residual):
+    u =    -3.713902   xg =    -2.752387   vg =     -73.801869   res = 1.9e-01
+
+==========================================================================
+h = 0.01
+==========================================================================
+  FIRST DIVERGENCE at step 8113 (t = 81.130)
+  state before step: x = 0.82759976, v = -3.24216588
+  correct step: xg = 0.78831842, vg = -4.61410185   (it=3, res=5.6e-15, conv=True)
+  buggy   step: xg = 0.78831842, vg = -4.61410184   (it=10, res=3.2e-14, conv=True)
+  deviation: 1.033e-08
+  ALL real roots of the stage equations at this state (u, xg, vg, residual):
+    u =    -0.039179   xg =     0.788421   vg =      -4.593682   res = 1.7e-02
+

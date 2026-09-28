@@ -1,0 +1,127 @@
+==========================================================================
+(1) SYMBOLIC: exact Newton Jacobian for the implicit midpoint stage
+==========================================================================
+Exact Jacobian dG/d(xg,vg) of the stage equations G = 0:
+⎡                                           -h            ⎤
+⎢              1                            ───           ⎥
+⎢                                            2            ⎥
+⎢                                                         ⎥
+⎢                                      ⎛            2⎞    ⎥
+⎢                                      ⎜    ⎛x   xg⎞ ⎟    ⎥
+⎢                                  h⋅μ⋅⎜1 - ⎜─ + ──⎟ ⎟    ⎥
+⎢   ⎛  ⎛v   vg⎞ ⎛  x   xg⎞   1⎞        ⎝    ⎝2   2 ⎠ ⎠    ⎥
+⎢-h⋅⎜μ⋅⎜─ + ──⎟⋅⎜- ─ - ──⎟ - ─⎟  - ─────────────────── + 1⎥
+⎣   ⎝  ⎝2   2 ⎠ ⎝  2   2 ⎠   2⎠             2             ⎦
+  entry (2,1) = dG2/dxg = -h/2 * J21,  with J21 = dfv/dmx = -2*mu*mx*mv - 1
+  i.e.  c_exact = h*(mu*(v + vg)*(x + xg) + 2)/4
+The scripts computation3/4.py use  c_script = +h/2*J21 = -h*(mu*(v + vg)*(x + xg) + 2)/4
+=> the (2,1) entry has the WRONG SIGN in the published scripts.
+   (computation2.py had c = -h/2*J21 [correct] but the v-update line
+    vg -= (c*G1 - a*G2)/det [wrong sign]; the 'fix' in 3/4 flipped c
+    instead of the update line, so the effective Jacobian is still wrong.)
+
+Harmonic oscillator: exact IM endpoint map (closed form)
+  x1 = (-h**2*x + 4*h*v + 4*x)/(h**2 + 4)
+  v1 = (-h**2*v - 4*h*x + 4*v)/(h**2 + 4)
+  det M = 1 ;  M^T J M - J = Matrix([[0, 0], [0, 0]])   (symplectic, as essay eq. (8))
+
+==========================================================================
+(2) NUMERICAL: correct IM step vs independent solver (scipy.optimize.root)
+==========================================================================
+  state (x,v)          h     Newton(correct)        scipy.root         agree
+  (  2.00,    0.00)    0.01   it= 2 res=8.3e-17      res=2.2e-17        3.30e-17 OK
+  (  1.50,  -30.00)    0.01   it= 5 res=0.0e+00      res=0.0e+00        0.00e+00 OK
+  (  0.30,  -95.00)    0.01   it= 6 res=2.2e-16      res=2.2e-16        0.00e+00 OK
+  (  2.00,    0.00)    0.50   it= 3 res=2.3e-16      res=5.8e-17        1.73e-18 OK
+  (  1.50,  -20.00)    0.50   it=199 res=3.2e-14      res=1.6e-01        1.79e+01 MISMATCH
+  => correct Newton == independent root solve: NO
+
+==========================================================================
+(3) Does the PUBLISHED Newton actually converge? (mu=100)
+    Per-step diagnostics: iterations used, final residual, converged?
+==========================================================================
+  h= 0.50 correct: converged 120/120 steps;  max iters   3
+  h= 0.50 buggy  : converged 120/120 steps;  max iters   7
+  h= 0.10 correct: converged 120/120 steps;  max iters   3
+  h= 0.10 buggy  : converged 120/120 steps;  max iters   4
+  h= 0.01 correct: converged 120/120 steps;  max iters   2
+  h= 0.01 buggy  : converged 120/120 steps;  max iters   3
+
+  A Newton step that converges lands on a root of G=0 -- but with the
+  WRONG-sign Jacobian it can lock onto a spurious root of the (cubic in
+  the stage velocity) stage system, far from the nearby true-IM root.
+  Then the 'step' is not the implicit midpoint step at all, even though
+  it satisfies the stage equations.
+
+  Step-by-step comparison over 120 steps from (2,0):
+  h= 0.50: max |buggy - correct| step = 1.021e-14 ;  jumps >1 at steps: []
+  h= 0.10: max |buggy - correct| step = 7.772e-15 ;  jumps >1 at steps: []
+  h= 0.01: max |buggy - correct| step = 8.353e-16 ;  jumps >1 at steps: []
+
+==========================================================================
+(4) Orbits on the mu=100 van der Pol cycle, start (2,0)
+    True: T=162.837, amplitude 2, max|v| ~ 134
+==========================================================================
+  Radau reference period Tref = 162.8371
+
+  --- 3 periods (~488.5 time units) ---
+  method (h)                              T       max|x|     max|v|    crossings  |x|>1e6 at t=
+  BUGGY IM (published), h=0.50         None    1.030e+27  4.119e+27         0   t=81.00
+  BUGGY IM (published), h=0.10         None    1.440e+29  2.879e+30         0   t=81.10
+  BUGGY IM (published), h=0.01         None    8.731e+29  1.746e+32         0   t=81.18
+  CORRECT IM, h=0.50                   None    3.032e+00  1.594e+01         1   -
+  CORRECT IM, h=0.10               286.5000    2.954e+00  7.381e+01         2   -
+  CORRECT IM, h=0.01               179.0800    2.090e+00  1.439e+02         2   -
+
+  --- longer runs, CORRECT implicit midpoint ---
+  h, periods                   T (last 3)       max|x|     max|v|     status
+  h=0.01, 20 per                 179.1333    2.090e+00  1.442e+02         ok
+  h=0.10, 10 per                 193.2000    4.849e+00  1.272e+02         ok
+  h=0.50, 5 per                      None    3.048e+00  1.617e+01 no-crossings
+
+  --- per-period max|v| spikes, CORRECT IM, h=0.01, 10 periods (ringing check) ---
+    period  1: max|x| =     2.070   max|v| =   143.373
+    period  2: max|x| =     2.090   max|v| =   130.962
+    period  3: max|x| =     2.089   max|v| =   143.949
+    period  4: max|x| =     2.082   max|v| =   143.784
+    period  5: max|x| =     2.087   max|v| =   144.223
+    period  6: max|x| =     2.064   max|v| =   140.150
+    period  7: max|x| =     2.089   max|v| =   135.206
+    period  8: max|x| =     2.078   max|v| =   144.147
+    period  9: max|x| =     2.090   max|v| =   128.970
+    period 10: max|x| =     2.089   max|v| =   144.045
+
+==========================================================================
+(5) Strang split (exact damping) -- NO Newton involved, must reproduce
+==========================================================================
+  Strang split, h=0.50 : T=None  max|x|=2.006e+15  max|v|=6.536e+07  no-crossings
+  Strang split, h=0.20 : T=151.4000  max|x|=4.592e+08  max|v|=1.044e+05  ok
+  (essay table: h=0.5 -> ~2.0e15 blow-up; h=0.2 -> T=151.40, max|x|~4.6e5)
+
+==========================================================================
+(6) Radau IIA rows of the essay table (L-stable, not symplectic)
+==========================================================================
+  Radau IIA max_step=0.5 : T=162.8371  (ref 162.8371)
+  Radau IIA max_step=1.0 : T=162.8371  (ref 162.8371)
+
+==========================================================================
+(7) Stability-function values at the relevant z = lambda*h
+==========================================================================
+  mode                                        z        h | R(z)            | e^z             
+  fast mode at x=2, lambda=-300           -3.00   h=0.01 |   -0.20000 |    4.979e-02
+  fast mode at x=2, lambda=-300          -30.00    h=0.1 |   -0.87500 |    9.358e-14
+  fast mode at x=2, lambda=-300         -150.00    h=0.5 |   -0.97368 |    7.175e-66
+  central region x=0, lambda=+100          1.00   h=0.01 |    3.00000 |    2.718e+00
+  central region x=0, lambda=+100         10.00    h=0.1 |   -1.50000 |    2.203e+04
+  central region x=0, lambda=+100         50.00    h=0.5 |   -1.08333 |    5.185e+21
+  R(-inf) = -1  (A-stable, not L-stable): fast modes are damped to |R| ~ 1,
+  with a sign flip each step, instead of to 0.
+
+==========================================================================
+(8) Sanity: harmonic oscillator, 1e5 steps, h=0.1 (mild -> Newton robust)
+==========================================================================
+  correct IM: max|E-E0| = 4.141e-14  (bounded: no drift)
+  buggy   IM: max|E-E0| = 1.586e-09  (bounded: no drift)
+
+[written to suspicion63_results.txt]
+[figure saved: suspicion63_figure.png]

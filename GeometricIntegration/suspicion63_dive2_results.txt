@@ -1,0 +1,51 @@
+==========================================================================
+(A) Symbolic verification of the stage-equation cubic
+==========================================================================
+  stage equation 2 as polynomial in w (endpoint increment):
+    coeff w^3 = mu/4
+    coeff w^2 = mu*x
+    coeff w^1 = h/2 + mu*x**2 - mu + 2/h
+    coeff w^0 = h*x - 2*v
+  difference from numeric formula: c3 mu/4 - 25.0, c2 x*(mu - 100.0), c1 mu*x**2 - mu - 100.0*x**2 + 100.0, c0 0
+  (all zero => numeric cubic is correct)
+
+==========================================================================
+h = 0.50 : deviation |buggy - correct| over time
+==========================================================================
+  |x|>1e6 first at: t=81.00
+  max deviation over 3 periods: 4.119e+27
+  first step with deviation > 1: step 162 (t = 81.000)
+    state before:  x = 1.05108642, v = -0.08499154  (x-1 = 0.0511)
+    correct: xg = 1.14635612, vg = 0.46607034   it=199 res=1.73e-01 conv=False
+    buggy  : xg = -1.0297397e+27, vg = -4.118959e+27   it= 99 res=3.41e+81 conv=False
+    buggy iterate stage residual (recomputed): G1 = 0.000e+00, G2 = 2.730e+82
+    real stage roots w at this state: -4.0610
+    |buggy xg - nearest root| = 1.030e+27
+    (slow-manifold velocity at this x: y_s = -0.1003; v = -0.0850)
+
+==========================================================================
+h = 0.10 : deviation |buggy - correct| over time
+==========================================================================
+  |x|>1e6 first at: t=81.10
+  max deviation over 3 periods: 2.879e+30
+  first step with deviation > 1: step 811 (t = 81.100)
+    state before:  x = 0.96151534, v = -0.47617977  (x-1 = -0.0385)
+    correct: xg = -2.75296478, vg = -73.81342263   it=199 res=4.26e-14 conv=False
+    buggy  : xg = 1.4397025e+29, vg = 2.8794049e+30   it= 99 res=9.33e+87 conv=False
+    buggy iterate stage residual (recomputed): G1 = 0.000e+00, G2 = 7.460e+88
+    real stage roots w at this state: -3.7145
+    |buggy xg - nearest root| = 1.440e+29
+
+==========================================================================
+h = 0.01 : deviation |buggy - correct| over time
+==========================================================================
+  |x|>1e6 first at: t=81.18
+  max deviation over 3 periods: 1.746e+32
+  first step with deviation > 1: step 8118 (t = 81.180)
+    state before:  x = -0.05912431, v = -74.15539585  (x-1 = -1.0591)
+    correct: xg = -1.14676678, vg = -143.37309613   it=  6 res=2.22e-16 conv=True
+    buggy  : xg = -8.7311626e+29, vg = -1.7462325e+32   it= 99 res=2.08e+90 conv=False
+    buggy iterate stage residual (recomputed): G1 = 0.000e+00, G2 = 1.664e+91
+    real stage roots w at this state: -1.0876
+    |buggy xg - nearest root| = 8.731e+29
+
