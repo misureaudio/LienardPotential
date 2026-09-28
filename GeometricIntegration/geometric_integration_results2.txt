@@ -1,0 +1,26 @@
+======================================================================
+(F1) Implicit midpoint: symplectic + A-stable.
+    One-step map for harmonic oscillator (x',v')=(v,-x):
+======================================================================
+    x* = (-h**2*x + 4*h*v + 4*x)/(h**2 + 4)
+    v* = (-h**2*v - 4*h*x + 4*v)/(h**2 + 4)
+    det(M) = 1   (1 => symplectic)
+    M^T J M - J = Matrix([
+[0, 0],
+[0, 0]])
+    R(z)=(1+z/2)/(1-z/2);  |R(iw)|^2 = 1  (=1 => A-stable, |R|=1 on imag axis)
+    R(-inf) = -1  =>  A-stable but NOT L-stable (Radau IIA is L-stable).
+
+======================================================================
+(F2) Van der Pol, mu = 100 (stiff relaxation regime).  Reference T ~ 162.84.
+    RK4 stable step: h < 0.93/mu = 0.0093.  Compare RK4 h=0.005 vs IM h=0.5.
+======================================================================
+    RK4  h=0.005:  T = 163.1100   (97702 steps, ok)
+    IM   h=0.5  :  T = None   (977 steps, no crossings)
+    RK4  h=0.5  :  T = None   (3 steps, DIVERGED)   [h=0.5 > 0.0093 => unstable]
+
+======================================================================
+(F3) Implicit midpoint orbit on mu=100 cycle: slow-manifold tracking.
+    Slow manifold y_s(x) = x/(mu(1-x^2)) for |x|>1.  Max |v - y_s(x)| on
+    the right slow branch (x in [1.05, 1.95]).
+======================================================================

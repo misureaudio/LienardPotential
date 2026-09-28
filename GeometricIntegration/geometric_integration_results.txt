@@ -1,0 +1,63 @@
+======================================================================
+(D) Harmonic oscillator  x'' + x = 0,  x(0)=1, v(0)=0,  E0 = 1/2
+    t_end = 1000 (~159 periods).  max|E-E0| over the run.
+======================================================================
+       h         method      max|E-E0|   E-E0 at tend
+   0.100  Storer-Verlet   1.250000e-03  -1.209881e-03
+   0.100            RK4   6.935283e-05  -6.935283e-05
+   0.010  Storer-Verlet   1.250000e-05  -8.594982e-06
+   0.010            RK4   6.944327e-10  -6.944327e-10
+
+======================================================================
+(A) Duffing double-well  x'' - x + x^3 = 0  (a=-1, b=1),  x(0)=0.5, v(0)=0
+    V = -x^2/2 + x^4/4 (wells at x=+-1).  t_end = 2000 (~840 periods).
+    E0 = -0.10937500 (below saddle level 0 => closed orbit in right well).
+    max|E-E0|, E-E0 at tend, and secular drift rate (linear fit of E-E0 vs t).
+======================================================================
+       h         method      max|E-E0|      E-E0@tend     drift rate
+   0.050  Storer-Verlet   1.511914e-04  +1.611226e-07  -3.188887e-10
+   0.050            RK4   1.602865e-05  -1.593924e-05  -8.007959e-09
+   0.010  Storer-Verlet   6.046417e-06  +2.530257e-08  +1.827552e-11
+   0.010            RK4   5.146930e-09  -5.109550e-09  -2.567094e-12
+
+======================================================================
+(B1) Van der Pol period, mu = 1.  Reference (Radau, rtol=1e-11):
+    T_ref = 6.66328686
+    Period from successive upward x=0 crossings (mean of last 5).
+======================================================================
+        h     RK4 period    Strang period    |RK4-ref|    |Str-ref|
+   0.0100     6.66328844       6.66310416    1.583e-06    1.827e-04
+   0.0050     6.66328721       6.66324140    3.533e-07    4.546e-05
+   0.0010     6.66328684       6.66328501    2.295e-08    1.851e-06
+
+======================================================================
+(B3) Van der Pol relaxation period (Radau, rtol=1e-10), mu large.
+    Asymptote: T(mu) = mu*(3 - 2 ln 2) + O(1),   3 - 2 ln 2 = 1.61370564
+======================================================================
+    mu   T (measured)       T/mu     T/(mu*C)
+    10        19.0784    1.90784      1.18227
+    50        82.5083    1.65017      1.02259
+   100       162.8371    1.62837      1.00909
+
+======================================================================
+(E) Van der Pol discrete Poincare map, mu = 0.1 (Strang splitting).
+    Fixed point v* of P(v)=v = discrete limit cycle (x=0 section, v>0).
+    Continuous limit: v* -> 2 (circle of radius 2), amplitude ~2.0001.
+    g(v) = P(v) - v; v* found by brentq on [1.5, 2.5].
+======================================================================
+        h    v* (fixed pt)     |v* - 2|
+   0.0100     2.0017014908    1.701e-03
+   0.0050     2.0017512785    1.751e-03
+   0.0010     2.0017700866    1.770e-03
+   0.0005     2.0017703916    1.770e-03
+
+======================================================================
+(S) Symbolic check: Storer-Verlet map for the harmonic oscillator is symplectic.
+    In 2D, a map M is symplectic (M^T J M = J, J=[[0,1],[-1,0]]) iff det M = 1.
+======================================================================
+    x1 = -h**2*x/2 + h*v + x
+    v2 = h**3*x/4 - h**2*v/2 - h*x + v
+    det(M) = 1
+    M^T J M - J = Matrix([
+[0, 0],
+[0, 0]])   (zero => symplectic)
