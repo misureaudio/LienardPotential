@@ -15,19 +15,28 @@ def vdp_f(x,v,mu): return (v, mu*(1-x*x)*v - x)
 
 def imid_step(x,v,h,f,mu):
     """Implicit midpoint (Gauss-Legendre 1-stage): symplectic & A-stable.
-    Solve (x*,v*)=(x,v)+h f((x+x*)/2,(v+v*)/2) by Newton on G(x*,v*)=0."""
+    Solve (x*,v*)=(x,v)+h f((x+x*)/2,(v+v*)/2) by Newton on G(x*,v*)=0.
+    v2 REMEDIATION: exact (2,1) Jacobian entry c = -h/2*J21 (v1 had +), and a
+    fail-loud guard so an unconverged iterate is never returned silently."""
     xg,vg=x,v
-    for _ in range(100):
+    res=float('inf')
+    for _ in range(200):
         mx,mv=0.5*(x+xg),0.5*(v+vg)
         fx,fv=f(mx,mv)
         G1=xg-x-h*fx; G2=vg-v-h*fv
-        if abs(G1)<1e-13 and abs(G2)<1e-13: return xg,vg
+        res=max(abs(G1),abs(G2))
+        if res<1e-14: return xg,vg
         J11,J12=0.0,1.0
         J21,J22=(-2.0*mu*mx*mv-1.0),(mu*(1-mx*mx))
-        a=1.0-0.5*h*J11; b=-0.5*h*J12; c=0.5*h*J21; d=1.0-0.5*h*J22
+        a=1.0-0.5*h*J11; b=-0.5*h*J12; c=-0.5*h*J21; d=1.0-0.5*h*J22
         det=a*d-b*c
         xg-= ( d*G1 - b*G2)/det
         vg-= (-c*G1 + a*G2)/det
+    # fail-loud: never return an unconverged (garbage) iterate silently
+    if not (np.isfinite(xg) and np.isfinite(vg)):
+        raise RuntimeError("IM Newton diverged (non-finite) at x=%g v=%g h=%g"%(x,v,h))
+    if res>1.0:
+        raise RuntimeError("IM step UNRESOLVED (residual %.3e) at x=%g v=%g h=%g"%(res,x,v,h))
     return xg,vg
 
 # sanity: harmonic oscillator implicit midpoint should stay on E=const (bounded)
